@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>Receivables Radar report - {{ as_of }}</title>
+<style>
+:root{--ink:#1b2430;--muted:#667085;--line:#e4e7ec;--bg:#f6f7f9;--card:#fff}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.45}
+main{max-width:1080px;margin:0 auto;padding:24px 16px 48px}
+h1{margin:0 0 4px;font-size:1.7rem}h2{margin:32px 0 12px;font-size:1.2rem}
+.muted{color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.card .label{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.card .value{font-size:1.45rem;font-weight:650;margin-top:4px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.75rem;font-weight:600;color:#fff}
+.LOW{background:#2e7d32}.MEDIUM{background:#b7791f}.HIGH{background:#e65100}.SEVERE{background:#b71c1c}
+.chart{width:100%;height:auto}
+.warn{background:#fff8e1;border:1px solid #f5d77a;border-radius:8px;padding:10px 14px}
+@media print{body{background:#fff}.card,.panel{border-color:#ccc;break-inside:avoid}main{padding:0}h2{break-after:avoid}}
+</style>
+</head>
+<body>
+<main>
+<h1>Receivables Radar report</h1>
+<p class='muted'>As of {{ as_of }} &middot; {{ currency }} &middot; {{ invoice_count }} invoices &middot; {{ payment_count }} payments</p>
+{% if warnings %}<div class='warn'><strong>Warnings</strong><ul>{% for w in warnings %}<li>{{ w }}</li>{% endfor %}</ul></div>{% endif %}
+<div class='cards' style='margin-top:16px'>
+<div class='card'><div class='label'>Total outstanding</div><div class='value'>{{ kpis.total_outstanding|money }}</div></div>
+<div class='card'><div class='label'>Overdue</div><div class='value'>{{ kpis.overdue_outstanding|money }}</div><div class='muted'>{{ kpis.overdue_share|pct }} of total</div></div>
+<div class='card'><div class='label'>DSO (days)</div><div class='value'>{{ kpis.dso|num }}</div></div>
+<div class='card'><div class='label'>Best possible DSO</div><div class='value'>{{ kpis.bpdso|num }}</div></div>
+<div class='card'><div class='label'>Avg days delinquent</div><div class='value'>{{ kpis.add|num }}</div></div>
+<div class='card'><div class='label'>CEI</div><div class='value'>{{ kpis.cei|num(2) }}%</div></div>
+<div class='card'><div class='label'>Uncollectable risk</div><div class='value'>{{ risk|money }}</div></div>
+</div>
+<h2>Aging</h2>
+<div class='panel'>{{ aging_svg }}
+<table><thead><tr><th>Bucket</th><th class='n'>Amount</th><th class='n'>Invoices</th><th class='n'>Share</th></tr></thead><tbody>
+{% for r in aging %}<tr><td>{{ r.bucket }}</td><td class='n'>{{ r.amount|money }}</td><td class='n'>{{ r.invoice_count }}</td><td class='n'>{{ r.share|pct }}</td></tr>{% endfor %}
+</tbody></table></div>
+<h2>Weekly cash forecast (base case)</h2>
+<div class='panel'>{{ forecast_svg }}</div>
+<h2>{{ weeks }}-week forecast by scenario</h2>
+<div class='panel'><table><thead><tr><th>Week</th>{% for n in scenario_names %}<th class='n'>{{ n }}</th>{% endfor %}</tr></thead><tbody>
+{% for r in forecast_rows %}<tr><td>{{ r.label }}</td>{% for v in r['values'] %}<td class='n'>{{ v|money }}</td>{% endfor %}</tr>{% endfor %}
+</tbody></table></div>
+<h2>Top customers by outstanding</h2>
+<div class='panel'><table><thead><tr><th>Customer</th><th class='n'>Outstanding</th><th class='n'>Share</th></tr></thead><tbody>
+{% for r in top %}<tr><td>{{ r.customer_name }}</td><td class='n'>{{ r.outstanding|money }}</td><td class='n'>{{ r.share|pct }}</td></tr>{% endfor %}
+</tbody></table></div>
+<h2>Risk tiers</h2>
+<div class='panel'><table><thead><tr><th>Tier</th><th class='n'>Customers</th><th class='n'>Outstanding</th></tr></thead><tbody>
+{% for r in tiers %}<tr><td><span class='badge {{ r.risk_tier }}'>{{ r.risk_tier }}</span></td><td class='n'>{{ r.customers }}</td><td class='n'>{{ r.outstanding|money }}</td></tr>{% endfor %}
+</tbody></table></div>
+<h2>Collections worklist (top 25)</h2>
+<div class='panel'><table><thead><tr><th>Customer</th><th class='n'>Overdue</th><th class='n'>Oldest (days)</th><th class='n'>Invoices</th><th>Risk</th><th class='n'>Priority</th><th>Suggested action</th></tr></thead><tbody>
+{% for r in worklist %}<tr><td>{{ r.customer_name }}</td><td class='n'>{{ r.total_overdue|money }}</td><td class='n'>{{ r.oldest_days_past_due }}</td><td class='n'>{{ r.invoice_count }}</td><td><span class='badge {{ r.risk_tier }}'>{{ r.risk_tier }}</span></td><td class='n'>{{ r.priority_score|money }}</td><td>{{ r.suggested_action }}</td></tr>{% endfor %}
+</tbody></table></div>
+</main>
+</body>
+</html>
