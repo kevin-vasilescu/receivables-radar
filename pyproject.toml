@@ -1,0 +1,55 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "receivables-radar"
+version = "0.1.0"
+description = "Turn invoice and payment exports into aging, DSO, customer risk, a 13-week cash forecast and a prioritized collections worklist in one command."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [{ name = "Kevin Vasilescu" }]
+keywords = ["accounts-receivable", "dso", "cash-flow", "collections", "forecasting"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "License :: OSI Approved :: MIT License",
+  "Typing :: Typed",
+]
+dependencies = ["pandas>=2.0", "typer>=0.9", "jinja2>=3.1"]
+
+[project.optional-dependencies]
+excel = ["openpyxl>=3.1"]
+dev = [
+  "pytest", "pytest-cov", "hypothesis", "ruff", "mypy", "pandas-stubs",
+  "pre-commit", "build", "twine", "pip-audit", "openpyxl",
+]
+
+[project.scripts]
+ar-radar = "receivables_radar.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/kevin-vasilescu/receivables-radar"
+Issues = "https://github.com/kevin-vasilescu/receivables-radar/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/receivables_radar"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 160
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F"]
+
+[tool.mypy]
+strict = true
+plugins = []
