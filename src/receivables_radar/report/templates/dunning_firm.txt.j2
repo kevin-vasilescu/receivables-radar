@@ -1,0 +1,19 @@
+Subject: Overdue invoices - action required ({{ customer_name }})
+
+Dear {{ customer_name }},
+
+We are writing because the invoice(s) below are now significantly past their due date and we have not yet received payment.
+
+{% for inv in invoices -%}
+- Invoice {{ inv.invoice_id }}: due {{ inv.due_date }}, {{ inv.days_past_due }} days past due, outstanding {{ inv.outstanding }} {{ currency }}
+{% endfor %}
+Total overdue: {{ total }} {{ currency }}
+
+Please arrange payment within 7 days or contact us to agree a payment date. If there is a query on any invoice, let us know right away so we can resolve it.
+
+{% if contact -%}
+Contact: {{ contact }}
+
+{% endif -%}
+Kind regards,
+{{ company_name }}

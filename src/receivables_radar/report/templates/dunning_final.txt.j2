@@ -1,0 +1,19 @@
+Subject: FINAL NOTICE - overdue invoices ({{ customer_name }})
+
+Dear {{ customer_name }},
+
+This is a final notice. The invoice(s) below are seriously overdue and remain unpaid despite earlier reminders.
+
+{% for inv in invoices -%}
+- Invoice {{ inv.invoice_id }}: due {{ inv.due_date }}, {{ inv.days_past_due }} days past due, outstanding {{ inv.outstanding }} {{ currency }}
+{% endfor %}
+Total overdue: {{ total }} {{ currency }}
+
+Unless payment in full is received within 5 days, we may place a hold on new orders and refer the account for further collection action. If you wish to propose a payment plan, contact us immediately.
+
+{% if contact -%}
+Contact: {{ contact }}
+
+{% endif -%}
+Kind regards,
+{{ company_name }}

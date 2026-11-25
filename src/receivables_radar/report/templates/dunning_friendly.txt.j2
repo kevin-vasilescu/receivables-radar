@@ -1,0 +1,19 @@
+Subject: Payment reminder ({{ customer_name }})
+
+Dear {{ customer_name }},
+
+I hope you are well. This is a friendly reminder that the invoice(s) below appear to be past their due date.
+
+{% for inv in invoices -%}
+- Invoice {{ inv.invoice_id }}: due {{ inv.due_date }}, {{ inv.days_past_due }} days past due, outstanding {{ inv.outstanding }} {{ currency }}
+{% endfor %}
+Total overdue: {{ total }} {{ currency }}
+
+If you have already sent payment, thank you, and please disregard this note. Otherwise we would be grateful if you could arrange payment at your convenience.
+
+{% if contact -%}
+Contact: {{ contact }}
+
+{% endif -%}
+Kind regards,
+{{ company_name }}
