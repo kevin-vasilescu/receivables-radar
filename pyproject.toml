@@ -48,8 +48,7 @@ line-length = 160
 src = ["src", "tests"]
 
 [tool.ruff.lint]
-select = ["E", "F"]
+select = ["E4", "E7", "E9", "F"]
 
 [tool.mypy]
 strict = true
-plugins = []
