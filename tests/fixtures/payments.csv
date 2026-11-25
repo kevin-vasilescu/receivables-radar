@@ -1,0 +1,5 @@
+payment_id,invoice_id,payment_date,amount
+P1,INV-1,2025-03-10,4000
+P2,INV-3,2025-02-09,2000
+P3,INV-4,2025-03-22,3000
+P4,INV-5,2025-04-15,1000
